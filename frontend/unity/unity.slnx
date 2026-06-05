@@ -1,0 +1,6 @@
+﻿<Solution>
+  <Project Path="SocketIOUnityAssembly.csproj" />
+  <Project Path="SnakeLudo.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
+</Solution>

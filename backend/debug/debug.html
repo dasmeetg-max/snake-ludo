@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Snake Ludo Debug</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: monospace;
+            background: #0d1117;
+            color: #c9d1d9;
+            padding: 24px;
+            font-size: 13px;
+        }
+
+        h1 {
+            color: #f85149;
+            margin-bottom: 16px;
+            font-size: 20px;
+        }
+
+        section {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        section h2 {
+            color: #58a6ff;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        label {
+            color: #8b949e;
+            min-width: 80px;
+        }
+
+        input[type="number"] {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 5px 8px;
+            border-radius: 4px;
+            width: 64px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        button {
+            background: #238636;
+            border: none;
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 12px;
+            transition: background 0.15s;
+        }
+
+        button:hover {
+            background: #2ea043;
+        }
+
+        button.danger {
+            background: #b91c1c;
+        }
+
+        button.danger:hover {
+            background: #dc2626;
+        }
+
+        button.neutral {
+            background: #1f6feb;
+        }
+
+        button.neutral:hover {
+            background: #388bfd;
+        }
+
+        .board-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            font-size: 12px;
+            color: #8b949e;
+        }
+
+        .board-info span {
+            color: #c9d1d9;
+        }
+
+        #log {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            padding: 10px;
+            height: 220px;
+            overflow-y: auto;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .log-out {
+            color: #58a6ff;
+        }
+
+        .log-in {
+            color: #3fb950;
+        }
+
+        .log-err {
+            color: #f85149;
+        }
+
+        .log-info {
+            color: #8b949e;
+        }
+
+        .scenarios {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 8px;
+        }
+
+        .scenario-btn {
+            text-align: left;
+            padding: 10px 12px;
+            background: #1f2937;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .scenario-btn:hover {
+            background: #273548;
+            border-color: #58a6ff;
+        }
+
+        .scenario-btn strong {
+            color: #58a6ff;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .scenario-btn small {
+            color: #8b949e;
+        }
+
+        #status-bar {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: #8b949e;
+            margin-bottom: 16px;
+        }
+
+        #status-bar .pill {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 20px;
+            padding: 3px 10px;
+        }
+
+        #status-bar .pill span {
+            color: #3fb950;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🐍 Snake Ludo — Debug Panel</h1>
+
+    <div id="status-bar">
+        <div class="pill">Socket: <span id="conn-status">connecting...</span></div>
+        <div class="pill">Phase: <span id="game-phase">—</span></div>
+        <div class="pill">Turn: <span id="current-turn">—</span></div>
+        <div class="pill">Forced Dice: <span id="forced-dice">none</span></div>
+    </div>
+
+    <!-- Board Info -->
+    <section>
+        <h2>📋 Board Reference</h2>
+        <div class="board-info" id="board-info">Loading...</div>
+    </section>
+
+    <!-- Dice -->
+    <section>
+        <h2>🎲 Force Dice</h2>
+        <div class="row">
+            <label>Value (1–6):</label>
+            <input type="number" id="diceVal" value="1" min="1" max="6">
+            <button onclick="forceDice()">Set Forced Dice</button>
+            <button class="danger" onclick="clearDice()">Clear (random)</button>
+        </div>
+    </section>
+
+    <!-- Teleport -->
+    <section>
+        <h2>📍 Teleport Token</h2>
+        <div class="row">
+            <label>Player:</label>
+            <input type="number" id="tpPlayer" value="0" min="0" max="1">
+            <label>Token:</label>
+            <input type="number" id="tpToken" value="0" min="0" max="1">
+            <label>Level:</label>
+            <input type="number" id="tpLevel" value="1" min="1" max="3">
+            <label>Tile:</label>
+            <input type="number" id="tpTile" value="0" min="0">
+            <button onclick="teleport()">Teleport</button>
+        </div>
+    </section>
+
+    <!-- Game Control -->
+    <section>
+        <h2>⚙️ Game Control</h2>
+        <div class="row">
+            <button class="neutral" onclick="setPhase('playing')">Force Start</button>
+            <button onclick="setPhase('waiting')">Reset to Waiting</button>
+            <button class="danger" onclick="resetGame()">Full Reset</button>
+            <button class="neutral" onclick="getState()">Print State</button>
+        </div>
+    </section>
+
+    <!-- Set Turn -->
+    <section>
+        <h2>🎯 Set Turn</h2>
+        <div class="row">
+            <label>Player:</label>
+            <input type="number" id="turnPlayer" value="0" min="0" max="1">
+            <button onclick="setTurn()">Set Turn</button>
+            <button class="neutral" onclick="setTurnAndLog(0)">→ P0's Turn</button>
+            <button class="neutral" onclick="setTurnAndLog(1)">→ P1's Turn</button>
+        </div>
+    </section>
+
+    <!-- Quick Scenarios -->
+    <section>
+        <h2>⚡ Quick Test Scenarios</h2>
+        <div class="scenarios">
+
+            <button class="scenario-btn" onclick="setupCollisionL1()">
+                <strong>💥 Collision — L1</strong>
+                <small>P0@L1:5 · P1@L1:4 · dice=1<br>Roll as P1 → P0 sent to L1:0</small>
+            </button>
+
+            <button class="scenario-btn" onclick="setupCollisionL2()">
+                <strong>💥 Collision — L2</strong>
+                <small>P0@L2:4 · P1@L2:3 · dice=1<br>Roll as P1 → P0 sent to L1:0</small>
+            </button>
+
+            <button class="scenario-btn" onclick="setupSafeCollision()">
+                <strong>🛡️ Safe Zone — No Collision</strong>
+                <small>P0@L1:7 (safe) · P1@L1:6 · dice=1<br>Roll as P1 → no collision</small>
+            </button>
+
+            <button class="scenario-btn" onclick="setupLadder()">
+                <strong>🪜 Ladder — L1→L2</strong>
+                <small>P0@L1:3 · dice=1<br>Roll as P0 → lands L1:4 → jumps L2:2</small>
+            </button>
+
+            <button class="scenario-btn" onclick="setupLadderL2()">
+                <strong>🪜 Ladder — L2→L3</strong>
+                <small>P0@L2:2 · dice=1<br>Roll as P0 → lands L2:3 → jumps L3:2</small>
+            </button>
+
+            <button class="scenario-btn" onclick="setupSnake()">
+                <strong>🐍 Snake — L2→L1</strong>
+                <small>P0@L2:7 · dice=1<br>Roll as P0 → lands L2:8 → drops L1:10</small>
+            </button>
+
+            <button class="scenario-btn" onclick="setupSnakeL3()">
+                <strong>🐍 Snake — L3→L2</strong>
+                <small>P0@L3:5 · dice=1<br>Roll as P0 → lands L3:6 → drops L2:7</small>
+            </button>
+
+            <button class="scenario-btn" onclick="setupLevelUpP0()">
+                <strong>⬆️ Level Up — P0 L1→L2</strong>
+                <small>P0@L1:27 · dice=1<br>Roll as P0 → completes loop → L2:0</small>
+            </button>
+
+            <button class="scenario-btn" onclick="setupLevelUpP1()">
+                <strong>⬆️ Level Up — P1 L1→L2</strong>
+                <small>P1@L1:13 · dice=1<br>Roll as P1 → completes loop → L2:11</small>
+            </button>
+
+            <button class="scenario-btn" onclick="setupOvershoot()">
+                <strong>🚫 Overshoot — L3</strong>
+                <small>P0@L3:14 · dice=4<br>Roll as P0 → cannot move (overshoots)</small>
+            </button>
+
+        </div>
+    </section>
+
+    <!-- Log -->
+    <section>
+        <h2>📡 Event Log</h2>
+        <div id="log"></div>
+    </section>
+
+    <script>
+        const socket = io({ query: { role: "debug" } });
+
+        // ── Status bar ────────────────────────────────────────────
+
+        socket.on("connect", () => {
+            document.getElementById("conn-status").textContent = "connected";
+            document.getElementById("conn-status").style.color = "#3fb950";
+            log("Connected: " + socket.id, "in");
+            loadBoardInfo();
+        });
+
+        socket.on("disconnect", () => {
+            document.getElementById("conn-status").textContent = "disconnected";
+            document.getElementById("conn-status").style.color = "#f85149";
+            log("Disconnected", "err");
+        });
+
+        socket.on("debugAck", (d) => {
+            if (d.error) {
+                log("❌ " + JSON.stringify(d), "err");
+            } else {
+                log("✅ " + JSON.stringify(d), "in");
+                if (d.action === "setDice")
+                    document.getElementById("forced-dice").textContent = d.value !== null ? d.value : "none";
+                if (d.action === "setTurn")
+                    document.getElementById("current-turn").textContent = "P" + d.playerIndex;
+            }
+        });
+
+        socket.on("debugState", (d) => {
+            document.getElementById("game-phase").textContent = d.gamePhase;
+            document.getElementById("current-turn").textContent = "P" + d.currentPlayerIndex;
+            document.getElementById("forced-dice").textContent = d.forcedDice ?? "none";
+            log("📋 State: " + JSON.stringify(d, null, 2), "info");
+        });
+
+        socket.on("gameStart", (d) => {
+            document.getElementById("game-phase").textContent = "playing";
+            document.getElementById("current-turn").textContent = "P" + d.currentPlayerIndex;
+            log("🚀 gameStart: P" + d.currentPlayerIndex + " goes first", "in");
+        });
+
+        socket.on("rollResult", (d) => {
+            document.getElementById("current-turn").textContent = "P" + (d.nextPlayerIndex ?? d.playerIndex);
+            log("🎲 rollResult: P" + d.playerIndex + " rolled " + d.roll + (d.autoPass ? " [AUTO-PASS]" : ""), "in");
+        });
+
+        socket.on("moveResult", (d) => {
+            const r = d.moveResult;
+            log("🎮 moveResult: " + r.type + " → " + JSON.stringify(r), "in");
+            if (d.nextPlayerIndex !== null && d.nextPlayerIndex !== undefined) {
+                document.getElementById("current-turn").textContent = "P" + d.nextPlayerIndex;
+            }
+        });
+
+        socket.on("playerWon", (d) => {
+            document.getElementById("game-phase").textContent = "finished";
+            log("🏆 playerWon: P" + d.playerIndex, "in");
+        });
+
+        socket.on("error", (d) => log("⚠️ error: " + JSON.stringify(d), "err"));
+
+        // ── Board info ────────────────────────────────────────────
+
+        async function loadBoardInfo() {
+            try {
+                const res = await fetch("/debug/board");
+                const data = await res.json();
+                const el = document.getElementById("board-info");
+
+                const ringLines = data.ringConfigs.map(r =>
+                    `<div>L${r.level}: <span>${r.boardSize} tiles</span> | radius <span>${r.radius}</span> | h <span>${r.height}</span></div>`
+                ).join("");
+
+                const safeLines = Object.entries(data.safeTiles).map(([level, tiles]) =>
+                    `<div>Safe L${level}: <span>[${tiles.join(", ")}]</span></div>`
+                ).join("");
+
+                const ladderLines = data.ladders.map(l =>
+                    `<div>🪜 L${l.fromLevel}:${l.fromTile} → L${l.toLevel}:${l.toTile}</div>`
+                ).join("");
+
+                const snakeLines = data.snakes.map(s =>
+                    `<div>🐍 L${s.fromLevel}:${s.fromTile} → L${s.toLevel}:${s.toTile}</div>`
+                ).join("");
+
+                el.innerHTML = ringLines + safeLines + ladderLines + snakeLines;
+            } catch (e) {
+                document.getElementById("board-info").textContent = "Failed to load board info";
+            }
+        }
+
+        // ── Controls ──────────────────────────────────────────────
+
+        function forceDice() {
+            const val = parseInt(document.getElementById("diceVal").value);
+            socket.emit("debugSetDice", { value: val });
+            log("→ debugSetDice: " + val, "out");
+        }
+
+        function clearDice() {
+            socket.emit("debugSetDice", { value: null });
+            log("→ debugSetDice: cleared", "out");
+        }
+
+        function teleport() {
+            const data = {
+                playerIndex: parseInt(document.getElementById("tpPlayer").value),
+                tokenId: parseInt(document.getElementById("tpToken").value),
+                level: parseInt(document.getElementById("tpLevel").value),
+                tile: parseInt(document.getElementById("tpTile").value)
+            };
+            socket.emit("debugTeleport", data);
+            log("→ debugTeleport: " + JSON.stringify(data), "out");
+        }
+
+        function setPhase(phase) {
+            socket.emit("debugSetPhase", { phase });
+            log("→ debugSetPhase: " + phase, "out");
+        }
+
+        function resetGame() {
+            socket.emit("debugResetGame");
+            log("→ debugResetGame", "out");
+        }
+
+        function getState() {
+            socket.emit("debugGetState");
+            log("→ debugGetState", "out");
+        }
+
+        // ── Scenarios ─────────────────────────────────────────────
+
+        // Single teleport — used only by the manual Teleport form
+        function tp(p, t, l, tile) { socket.emit("debugTeleport", { playerIndex: p, tokenId: t, level: l, tile }); }
+
+        // Batch teleport — all positions sent in ONE event, no race condition possible
+        function batch(teleports) { socket.emit("debugBatchTeleport", { teleports }); }
+
+        function dice(v) { socket.emit("debugSetDice", { value: v }); }
+
+        function setTurn() {
+            const p = parseInt(document.getElementById("turnPlayer").value);
+            socket.emit("debugSetTurn", { playerIndex: p });
+            log("→ debugSetTurn: P" + p, "out");
+        }
+
+        function setTurnAndLog(p) {
+            document.getElementById("turnPlayer").value = p;
+            socket.emit("debugSetTurn", { playerIndex: p });
+            log("→ debugSetTurn: P" + p, "out");
+        }
+
+        function turn(p) { socket.emit("debugSetTurn", { playerIndex: p }); }
+
+        function setupCollisionL1() {
+            turn(1);
+            batch([{ playerIndex: 0, tokenId: 0, level: 1, tile: 5 },
+            { playerIndex: 1, tokenId: 0, level: 1, tile: 4 }]);
+            dice(1);
+            log("→ Collision L1: turn=P1 · P0@L1:5 · P1@L1:4 · dice=1 — roll as P1 → P0 sent to L1:0", "out");
+        }
+
+        function setupCollisionL2() {
+            turn(1);
+            batch([{ playerIndex: 0, tokenId: 0, level: 2, tile: 4 },
+            { playerIndex: 1, tokenId: 0, level: 2, tile: 3 }]);
+            dice(1);
+            log("→ Collision L2: turn=P1 · P0@L2:4 · P1@L2:3 · dice=1 — roll as P1 → P0 sent to L1:0", "out");
+        }
+
+        function setupSafeCollision() {
+            turn(1);
+            batch([{ playerIndex: 0, tokenId: 0, level: 1, tile: 7 },
+            { playerIndex: 1, tokenId: 0, level: 1, tile: 6 }]);
+            dice(1);
+            log("→ Safe Zone: turn=P1 · P0@L1:7 (safe) · P1@L1:6 · dice=1 — roll as P1 → no collision", "out");
+        }
+
+        function setupLadder() {
+            turn(0);
+            batch([{ playerIndex: 0, tokenId: 0, level: 1, tile: 3 }]);
+            dice(1);
+            log("→ Ladder L1→L2: turn=P0 · P0@L1:3 · dice=1 — roll as P0 → L1:4 → L2:2", "out");
+        }
+
+        function setupLadderL2() {
+            turn(0);
+            batch([{ playerIndex: 0, tokenId: 0, level: 2, tile: 2 }]);
+            dice(1);
+            log("→ Ladder L2→L3: turn=P0 · P0@L2:2 · dice=1 — roll as P0 → L2:3 → L3:2", "out");
+        }
+
+        function setupSnake() {
+            turn(0);
+            batch([{ playerIndex: 0, tokenId: 0, level: 2, tile: 7 }]);
+            dice(1);
+            log("→ Snake L2→L1: turn=P0 · P0@L2:7 · dice=1 — roll as P0 → L2:8 → L1:10", "out");
+        }
+
+        function setupSnakeL3() {
+            turn(0);
+            batch([{ playerIndex: 0, tokenId: 0, level: 3, tile: 5 }]);
+            dice(1);
+            log("→ Snake L3→L2: turn=P0 · P0@L3:5 · dice=1 — roll as P0 → L3:6 → L2:7", "out");
+        }
+
+        function setupLevelUpP0() {
+            turn(0);
+            batch([{ playerIndex: 0, tokenId: 0, level: 1, tile: 27 }]);
+            dice(1);
+            log("→ Level Up P0: turn=P0 · P0@L1:27 · dice=1 — roll as P0 → L2:0", "out");
+        }
+
+        function setupLevelUpP1() {
+            turn(1);
+            batch([{ playerIndex: 1, tokenId: 0, level: 1, tile: 13 }]);
+            dice(1);
+            log("→ Level Up P1: turn=P1 · P1@L1:13 · dice=1 — roll as P1 → L2:11", "out");
+        }
+
+        function setupOvershoot() {
+            turn(0);
+            batch([{ playerIndex: 0, tokenId: 0, level: 3, tile: 14 }]);
+            dice(4);
+            log("→ Overshoot: turn=P0 · P0@L3:14 · dice=4 — roll as P0 → cannot move", "out");
+        }
+
+        // ── Log helper ────────────────────────────────────────────
+
+        function log(msg, type = "info") {
+            const el = document.getElementById("log");
+            const div = document.createElement("div");
+            div.className = "log-" + type;
+            div.textContent = new Date().toLocaleTimeString() + "  " + msg;
+            el.prepend(div);
+        }
+    </script>
+</body>
+
+</html>
