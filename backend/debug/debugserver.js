@@ -22,8 +22,8 @@ module.exports = function mountDebug({ app, io, gameState, RING_CONFIGS, SAFE_TI
             ringConfigs: Object.entries(RING_CONFIGS).map(([level, cfg]) => ({
                 level: parseInt(level),
                 boardSize: cfg.boardSize,
-                height: cfg.height,
-                radius: parseFloat(cfg.radius.toFixed(2))
+                tilesPerSide: cfg.boardSize / 4,
+                halfSide: parseFloat(cfg.halfSide.toFixed(2))
             })),
             safeTiles: SAFE_TILES,
             ladders: LADDERS,

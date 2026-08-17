@@ -268,52 +268,87 @@
 
             <button class="scenario-btn" onclick="setupCollisionL1()">
                 <strong>💥 Collision — L1</strong>
-                <small>P0@L1:5 · P1@L1:4 · dice=1<br>Roll as P1 → P0 sent to L1:0</small>
+                <small>P0@L1:5 · P1@L1:4 · dice=1<br>Roll as P1 → P0 sent to L1:4</small>
             </button>
 
             <button class="scenario-btn" onclick="setupCollisionL2()">
                 <strong>💥 Collision — L2</strong>
-                <small>P0@L2:4 · P1@L2:3 · dice=1<br>Roll as P1 → P0 sent to L1:0</small>
+                <small>P0@L2:10 · P1@L2:9 · dice=1<br>Roll as P1 → P0 sent to L1:4</small>
             </button>
 
             <button class="scenario-btn" onclick="setupSafeCollision()">
                 <strong>🛡️ Safe Zone — No Collision</strong>
-                <small>P0@L1:7 (safe) · P1@L1:6 · dice=1<br>Roll as P1 → no collision</small>
+                <small>P0@L1:8 (corner) · P1@L1:7 · dice=1<br>Roll as P1 → no collision</small>
             </button>
 
-            <button class="scenario-btn" onclick="setupLadder()">
-                <strong>🪜 Ladder — L1→L2</strong>
-                <small>P0@L1:3 · dice=1<br>Roll as P0 → lands L1:4 → jumps L2:2</small>
+            <button class="scenario-btn" onclick="setupLadderB()">
+                <strong>🪜 Ladder B — L1:11→L2:8</strong>
+                <small>P0@L1:10 · dice=1<br>Roll as P0 → lands L1:11 → climbs L2:8</small>
             </button>
 
-            <button class="scenario-btn" onclick="setupLadderL2()">
-                <strong>🪜 Ladder — L2→L3</strong>
-                <small>P0@L2:2 · dice=1<br>Roll as P0 → lands L2:3 → jumps L3:2</small>
+            <button class="scenario-btn" onclick="setupLadderD()">
+                <strong>🪜 Ladder D — L1:27→L2:20</strong>
+                <small>P1@L1:26 · dice=1<br>Roll as P1 → lands L1:27 → climbs L2:20</small>
             </button>
 
-            <button class="scenario-btn" onclick="setupSnake()">
-                <strong>🐍 Snake — L2→L1</strong>
-                <small>P0@L2:7 · dice=1<br>Roll as P0 → lands L2:8 → drops L1:10</small>
+            <button class="scenario-btn" onclick="setupLadderA()">
+                <strong>🪜 Ladder A — L2:4→L3:3</strong>
+                <small>P1@L2:3 · dice=1<br>Roll as P1 → lands L2:4 → climbs L3:3</small>
             </button>
 
-            <button class="scenario-btn" onclick="setupSnakeL3()">
-                <strong>🐍 Snake — L3→L2</strong>
-                <small>P0@L3:5 · dice=1<br>Roll as P0 → lands L3:6 → drops L2:7</small>
+            <button class="scenario-btn" onclick="setupLadderC()">
+                <strong>🪜 Ladder C — L2:16→L3:11</strong>
+                <small>P0@L2:15 · dice=1<br>Roll as P0 → lands L2:16 → climbs L3:11</small>
+            </button>
+
+            <button class="scenario-btn" onclick="setupSnakeA()">
+                <strong>🐍 Snake A — L2:1→L1:2</strong>
+                <small>P0@L2:0 · dice=1<br>Roll as P0 → lands L2:1 → drops L1:2</small>
+            </button>
+
+            <button class="scenario-btn" onclick="setupSnakeC()">
+                <strong>🐍 Snake C — L2:13→L1:18</strong>
+                <small>P1@L2:12 · dice=1<br>Roll as P1 → lands L2:13 → drops L1:18</small>
+            </button>
+
+            <button class="scenario-btn" onclick="setupSnakeB()">
+                <strong>🐍 Snake B — L3:6→L2:9</strong>
+                <small>P0@L3:5 · dice=1<br>Roll as P0 → lands L3:6 → drops L2:9</small>
+            </button>
+
+            <button class="scenario-btn" onclick="setupSnakeD()">
+                <strong>🐍 Snake D — L3:14→L2:21</strong>
+                <small>P1@L3:13 · dice=1<br>Roll as P1 → lands L3:14 → drops L2:21</small>
             </button>
 
             <button class="scenario-btn" onclick="setupLevelUpP0()">
                 <strong>⬆️ Level Up — P0 L1→L2</strong>
-                <small>P0@L1:27 · dice=1<br>Roll as P0 → completes loop → L2:0</small>
+                <small>P0@L1:3 · dice=1<br>Roll as P0 → completes lap at L1:4 → L2:3</small>
             </button>
 
             <button class="scenario-btn" onclick="setupLevelUpP1()">
                 <strong>⬆️ Level Up — P1 L1→L2</strong>
-                <small>P1@L1:13 · dice=1<br>Roll as P1 → completes loop → L2:11</small>
+                <small>P1@L1:19 · dice=1<br>Roll as P1 → completes lap at L1:20 → L2:15</small>
+            </button>
+
+            <button class="scenario-btn" onclick="setupLevelUpP0M2()">
+                <strong>⬆️ Level Up — P0 L2→L3</strong>
+                <small>P0@L2:2 · dice=1<br>Roll as P0 → completes lap at L2:3 → L3:2</small>
+            </button>
+
+            <button class="scenario-btn" onclick="setupLevelUpP1M2()">
+                <strong>⬆️ Level Up — P1 L2→L3</strong>
+                <small>P1@L2:14 · dice=1<br>Roll as P1 → completes lap at L2:15 → L3:10</small>
             </button>
 
             <button class="scenario-btn" onclick="setupOvershoot()">
-                <strong>🚫 Overshoot — L3</strong>
-                <small>P0@L3:14 · dice=4<br>Roll as P0 → cannot move (overshoots)</small>
+                <strong>🚫 Overshoot — L3 win</strong>
+                <small>P0 T0@L3:15 (3 to home) · dice=5<br>Roll as P0, pick T0 → rejected</small>
+            </button>
+
+            <button class="scenario-btn" onclick="setupOvershootAutoPass()">
+                <strong>⏭️ Overshoot — Auto-Pass</strong>
+                <small>P0 T0@L3:15 · T1@L3:13 · dice=6<br>Roll as P0 → both overshoot → pass</small>
             </button>
 
         </div>
@@ -397,7 +432,7 @@
                 const el = document.getElementById("board-info");
 
                 const ringLines = data.ringConfigs.map(r =>
-                    `<div>L${r.level}: <span>${r.boardSize} tiles</span> | radius <span>${r.radius}</span> | h <span>${r.height}</span></div>`
+                    `<div>L${r.level}: <span>${r.boardSize} tiles</span> | <span>${r.tilesPerSide}</span>/side | halfSide <span>${r.halfSide}</span></div>`
                 ).join("");
 
                 const safeLines = Object.entries(data.safeTiles).map(([level, tiles]) =>
@@ -481,77 +516,142 @@
 
         function turn(p) { socket.emit("debugSetTurn", { playerIndex: p }); }
 
+        // Collision — P1 lands on P0 at a plain L1 tile.
+        // P0 resets to its own L1 home (4), which is now itself a safe tile.
         function setupCollisionL1() {
             turn(1);
             batch([{ playerIndex: 0, tokenId: 0, level: 1, tile: 5 },
             { playerIndex: 1, tokenId: 0, level: 1, tile: 4 }]);
             dice(1);
-            log("→ Collision L1: turn=P1 · P0@L1:5 · P1@L1:4 · dice=1 — roll as P1 → P0 sent to L1:0", "out");
+            log("→ Collision L1: turn=P1 · P0@L1:5 · P1@L1:4 · dice=1 — roll as P1 → P0 sent to L1:4", "out");
         }
 
+        // Collision one level in — L2:10 is plain (not safe, no ladder/snake).
+        // A token knocked off L2 drops to L1 and resets to P0's L1 home.
         function setupCollisionL2() {
             turn(1);
-            batch([{ playerIndex: 0, tokenId: 0, level: 2, tile: 4 },
-            { playerIndex: 1, tokenId: 0, level: 2, tile: 3 }]);
+            batch([{ playerIndex: 0, tokenId: 0, level: 2, tile: 10 },
+            { playerIndex: 1, tokenId: 0, level: 2, tile: 9 }]);
             dice(1);
-            log("→ Collision L2: turn=P1 · P0@L2:4 · P1@L2:3 · dice=1 — roll as P1 → P0 sent to L1:0", "out");
+            log("→ Collision L2: turn=P1 · P0@L2:10 · P1@L2:9 · dice=1 — roll as P1 → P0 sent to L1:4", "out");
         }
 
+        // L1:8 is a corner watchtower — P1 lands on P0 there and nothing happens.
         function setupSafeCollision() {
             turn(1);
-            batch([{ playerIndex: 0, tokenId: 0, level: 1, tile: 7 },
-            { playerIndex: 1, tokenId: 0, level: 1, tile: 6 }]);
+            batch([{ playerIndex: 0, tokenId: 0, level: 1, tile: 8 },
+            { playerIndex: 1, tokenId: 0, level: 1, tile: 7 }]);
             dice(1);
-            log("→ Safe Zone: turn=P1 · P0@L1:7 (safe) · P1@L1:6 · dice=1 — roll as P1 → no collision", "out");
+            log("→ Safe Zone: turn=P1 · P0@L1:8 (corner) · P1@L1:7 · dice=1 — roll as P1 → no collision", "out");
         }
 
-        function setupLadder() {
+        function setupLadderB() {
             turn(0);
-            batch([{ playerIndex: 0, tokenId: 0, level: 1, tile: 3 }]);
+            batch([{ playerIndex: 0, tokenId: 0, level: 1, tile: 10 }]);
             dice(1);
-            log("→ Ladder L1→L2: turn=P0 · P0@L1:3 · dice=1 — roll as P0 → L1:4 → L2:2", "out");
+            log("→ Ladder B: turn=P0 · P0@L1:10 · dice=1 — roll as P0 → L1:11 → L2:8", "out");
         }
 
-        function setupLadderL2() {
+        function setupLadderD() {
+            turn(1);
+            batch([{ playerIndex: 1, tokenId: 0, level: 1, tile: 26 }]);
+            dice(1);
+            log("→ Ladder D: turn=P1 · P1@L1:26 · dice=1 — roll as P1 → L1:27 → L2:20", "out");
+        }
+
+        // Ladder A sits on P0's own face, but P0 cannot be staged in front of it:
+        // L2:3 is P0's home, so P0 would level up rather than step onto L2:4.
+        // P1 is 12 tiles from its own home there, so it just walks on.
+        function setupLadderA() {
+            turn(1);
+            batch([{ playerIndex: 1, tokenId: 0, level: 2, tile: 3 }]);
+            dice(1);
+            log("→ Ladder A: turn=P1 · P1@L2:3 · dice=1 — roll as P1 → L2:4 → L3:3", "out");
+        }
+
+        function setupLadderC() {
             turn(0);
-            batch([{ playerIndex: 0, tokenId: 0, level: 2, tile: 2 }]);
+            batch([{ playerIndex: 0, tokenId: 0, level: 2, tile: 15 }]);
             dice(1);
-            log("→ Ladder L2→L3: turn=P0 · P0@L2:2 · dice=1 — roll as P0 → L2:3 → L3:2", "out");
+            log("→ Ladder C: turn=P0 · P0@L2:15 · dice=1 — roll as P0 → L2:16 → L3:11", "out");
         }
 
-        function setupSnake() {
+        function setupSnakeA() {
             turn(0);
-            batch([{ playerIndex: 0, tokenId: 0, level: 2, tile: 7 }]);
+            batch([{ playerIndex: 0, tokenId: 0, level: 2, tile: 0 }]);
             dice(1);
-            log("→ Snake L2→L1: turn=P0 · P0@L2:7 · dice=1 — roll as P0 → L2:8 → L1:10", "out");
+            log("→ Snake A: turn=P0 · P0@L2:0 · dice=1 — roll as P0 → L2:1 → L1:2", "out");
         }
 
-        function setupSnakeL3() {
+        function setupSnakeC() {
+            turn(1);
+            batch([{ playerIndex: 1, tokenId: 0, level: 2, tile: 12 }]);
+            dice(1);
+            log("→ Snake C: turn=P1 · P1@L2:12 · dice=1 — roll as P1 → L2:13 → L1:18", "out");
+        }
+
+        function setupSnakeB() {
             turn(0);
             batch([{ playerIndex: 0, tokenId: 0, level: 3, tile: 5 }]);
             dice(1);
-            log("→ Snake L3→L2: turn=P0 · P0@L3:5 · dice=1 — roll as P0 → L3:6 → L2:7", "out");
+            log("→ Snake B: turn=P0 · P0@L3:5 · dice=1 — roll as P0 → L3:6 → L2:9", "out");
         }
 
+        function setupSnakeD() {
+            turn(1);
+            batch([{ playerIndex: 1, tokenId: 0, level: 3, tile: 13 }]);
+            dice(1);
+            log("→ Snake D: turn=P1 · P1@L3:13 · dice=1 — roll as P1 → L3:14 → L2:21", "out");
+        }
+
+        // Lap completion: one step short of the L1 home tile, so the roll lands
+        // exactly on it and the token crosses the bridge to the L2 home.
         function setupLevelUpP0() {
             turn(0);
-            batch([{ playerIndex: 0, tokenId: 0, level: 1, tile: 27 }]);
+            batch([{ playerIndex: 0, tokenId: 0, level: 1, tile: 3 }]);
             dice(1);
-            log("→ Level Up P0: turn=P0 · P0@L1:27 · dice=1 — roll as P0 → L2:0", "out");
+            log("→ Level Up P0: turn=P0 · P0@L1:3 · dice=1 — roll as P0 → L1:4 completes lap → L2:3", "out");
         }
 
         function setupLevelUpP1() {
             turn(1);
-            batch([{ playerIndex: 1, tokenId: 0, level: 1, tile: 13 }]);
+            batch([{ playerIndex: 1, tokenId: 0, level: 1, tile: 19 }]);
             dice(1);
-            log("→ Level Up P1: turn=P1 · P1@L1:13 · dice=1 — roll as P1 → L2:11", "out");
+            log("→ Level Up P1: turn=P1 · P1@L1:19 · dice=1 — roll as P1 → L1:20 completes lap → L2:15", "out");
         }
 
+        // Moat 2 bridge — same lap-completion path one ring in.
+        function setupLevelUpP0M2() {
+            turn(0);
+            batch([{ playerIndex: 0, tokenId: 0, level: 2, tile: 2 }]);
+            dice(1);
+            log("→ Level Up P0 (moat 2): turn=P0 · P0@L2:2 · dice=1 — roll as P0 → L2:3 completes lap → L3:2", "out");
+        }
+
+        function setupLevelUpP1M2() {
+            turn(1);
+            batch([{ playerIndex: 1, tokenId: 0, level: 2, tile: 14 }]);
+            dice(1);
+            log("→ Level Up P1 (moat 2): turn=P1 · P1@L2:14 · dice=1 — roll as P1 → L2:15 completes lap → L3:10", "out");
+        }
+
+        // T0 is 3 from home on the final ring, so a 5 overshoots and the server
+        // rejects moveToken. T1 stays at start and can still move, so no auto-pass.
         function setupOvershoot() {
             turn(0);
-            batch([{ playerIndex: 0, tokenId: 0, level: 3, tile: 14 }]);
-            dice(4);
-            log("→ Overshoot: turn=P0 · P0@L3:14 · dice=4 — roll as P0 → cannot move", "out");
+            batch([{ playerIndex: 0, tokenId: 0, level: 3, tile: 15 },
+            { playerIndex: 0, tokenId: 1, level: 1, tile: 4 }]);
+            dice(5);
+            log("→ Overshoot: turn=P0 · P0 T0@L3:15 (3 to home) · T1@L1:4 · dice=5 — pick T0 → rejected", "out");
+        }
+
+        // Both tokens overshoot (3 and 5 steps from home, dice 6) → auto-pass.
+        function setupOvershootAutoPass() {
+            turn(0);
+            batch([{ playerIndex: 0, tokenId: 0, level: 3, tile: 15 },
+            { playerIndex: 0, tokenId: 1, level: 3, tile: 13 }]);
+            dice(6);
+            log("→ Overshoot auto-pass: turn=P0 · T0@L3:15 · T1@L3:13 · dice=6 — roll as P0 → auto-pass to P1", "out");
         }
 
         // ── Log helper ────────────────────────────────────────────

@@ -19,20 +19,29 @@ const DEBUG_MODE = true;
 
 // ─────────────────────────────────────────
 // Board Configuration
-// radius = (boardSize * tileSize) / (2 * PI) — derived automatically
-// Unity receives these values and builds the pyramid — no Inspector config needed
+// Three concentric squares separated by water moats.
+//   tilesPerSide = boardSize / 4
+//   halfSide     = (boardSize * tileSize) / 8      — square analogue of radius
+//   moatWidth    = (outer - inner) * tileSize / 8  — derived, not free
+// Ring sizes must each be divisible by 4 (equal sides), differ by an equal
+// amount (equal moats), and that difference must itself be a multiple of 4.
+// 32 / 24 / 16 → sides of 8 / 6 / 4, differences of 8, both moats one tile wide.
+// The client receives boardSize, tileSize and halfSide and lays out the squares.
 // ─────────────────────────────────────────
 
 const TILE_SIZE = 2.0;
 
 const BOARD_CONFIG = {
-    1: { boardSize: 28, height: 0.0 },
-    2: { boardSize: 22, height: 2.0 },
-    3: { boardSize: 16, height: 4.0 }
+    1: { boardSize: 32 },
+    2: { boardSize: 24 },
+    3: { boardSize: 16 }
 };
 
-function getBoardRadius(boardSize) {
-    return (boardSize * TILE_SIZE) / (2 * Math.PI);
+// Distance from the board centre to the middle of a side — the square analogue
+// of the old ring radius. Side length is boardSize/4 tiles, so 2*halfSide is
+// (boardSize/4) * tileSize.
+function getHalfSide(boardSize) {
+    return (boardSize * TILE_SIZE) / 8;
 }
 
 const RING_CONFIGS = Object.fromEntries(
@@ -40,9 +49,8 @@ const RING_CONFIGS = Object.fromEntries(
         parseInt(level),
         {
             boardSize: config.boardSize,
-            height: config.height,
             tileSize: TILE_SIZE,
-            radius: getBoardRadius(config.boardSize)
+            halfSide: getHalfSide(config.boardSize)
         }
     ])
 );
@@ -51,54 +59,75 @@ const MAX_LEVEL = Object.keys(BOARD_CONFIG).length;
 const TOKENS_PER_PLAYER = 2;
 
 // ─────────────────────────────────────────
+// Face boundaries — tile 0 sits on a corner
+//   L1 (32): A 0–7   B 8–15   C 16–23  D 24–31
+//   L2 (24): A 0–5   B 6–11   C 12–17  D 18–23
+//   L3 (16): A 0–3   B 4–7    C 8–11   D 12–15
+//
+// The whole board is invariant under 180° rotation: add 16 to an L1 index,
+// 12 to an L2 index, or 8 to an L3 index (mod ring size) and you land on the
+// mirrored feature. Preserve this in any adjustment.
+// ─────────────────────────────────────────
+
+// ─────────────────────────────────────────
 // Safe Tiles (tile-local index per level)
+// Four corners (quarter points) plus both home tiles per ring
 // ─────────────────────────────────────────
 
 const SAFE_TILES = {
-    1: [0, 7, 14, 21],
-    2: [0, 5, 11, 16],
-    3: [0, 4, 8, 12]
+    1: [0, 4, 8, 16, 20, 24],
+    2: [0, 3, 6, 12, 15, 18],
+    3: [0, 2, 4, 8, 10, 12]
 };
 
 // ─────────────────────────────────────────
-// Ladders
+// Ladders — inward shortcuts, one level up
+//
+// Both endpoints share a face AND sit at the same offset along it, so every
+// crossing is perpendicular and exactly one moat wide. A tile at face-local
+// index j sits at x = -halfSide + tileSize*j, so with per-side counts differing
+// by 2 at every moat the alignment rule is: innerIndex = outerIndex - 1.
+// Break that and the crossing goes diagonal and needs its own sprite.
 // ─────────────────────────────────────────
 
 const LADDERS = [
-    { fromLevel: 1, fromTile: 4, toLevel: 2, toTile: 2 },
-    { fromLevel: 1, fromTile: 18, toLevel: 2, toTile: 14 },
-    { fromLevel: 2, fromTile: 3, toLevel: 3, toTile: 2 },
-    { fromLevel: 2, fromTile: 17, toLevel: 3, toTile: 13 },
+    { fromLevel: 1, fromTile: 11, toLevel: 2, toTile: 8 },   // face B
+    { fromLevel: 1, fromTile: 27, toLevel: 2, toTile: 20 },  // face D
+    { fromLevel: 2, fromTile: 4, toLevel: 3, toTile: 3 },    // face A
+    { fromLevel: 2, fromTile: 16, toLevel: 3, toTile: 11 },  // face C
 ];
 
 // ─────────────────────────────────────────
-// Snakes
+// Snakes — outward, one level down
+// Same alignment rule as the ladders above
 // ─────────────────────────────────────────
 
 const SNAKES = [
-    { fromLevel: 2, fromTile: 8, toLevel: 1, toTile: 10 },
-    { fromLevel: 2, fromTile: 19, toLevel: 1, toTile: 24 },
-    { fromLevel: 3, fromTile: 6, toLevel: 2, toTile: 7 },
-    { fromLevel: 3, fromTile: 11, toLevel: 2, toTile: 18 },
+    { fromLevel: 2, fromTile: 1, toLevel: 1, toTile: 2 },    // face A
+    { fromLevel: 2, fromTile: 13, toLevel: 1, toTile: 18 },  // face C
+    { fromLevel: 3, fromTile: 6, toLevel: 2, toTile: 9 },    // face B
+    { fromLevel: 3, fromTile: 14, toLevel: 2, toTile: 21 },  // face D
 ];
 
 // ─────────────────────────────────────────
 // Player Starts
 // homeTiles: completion point per level — also reset point after collision
+// Homes sit at side midpoints so every bridge crosses its moat perpendicular
+// and all four are the same length. P0 on face A, P1 antipodal on face C.
 // ─────────────────────────────────────────
 
 const PLAYER_STARTS = [
     {
         playerIndex: 0,
         startLevel: 1,
-        startTile: 0,
-        homeTiles: { 1: 0, 2: 0, 3: 0 }
+        startTile: 4,
+        homeTiles: { 1: 4, 2: 3, 3: 2 }
     },
     {
         playerIndex: 1,
         startLevel: 1,
-        startTile: 14,
-        homeTiles: { 1: 14, 2: 11, 3: 8 }
+        startTile: 20,
+        homeTiles: { 1: 20, 2: 15, 3: 10 }
     }
 ];
 
@@ -338,9 +367,8 @@ function buildInitPayload(player) {
         ringConfigs: Object.entries(RING_CONFIGS).map(([level, cfg]) => ({
             level: parseInt(level),
             boardSize: cfg.boardSize,
-            height: cfg.height,
             tileSize: cfg.tileSize,
-            radius: parseFloat(cfg.radius.toFixed(4))
+            halfSide: parseFloat(cfg.halfSide.toFixed(4))
         })),
         safeTiles: Object.entries(SAFE_TILES).map(([level, tiles]) => ({
             level: parseInt(level), tiles
@@ -460,7 +488,7 @@ io.on("connection", (socket) => {
 // ─────────────────────────────────────────
 
 if (DEBUG_MODE) {
-    const mountDebug = require("./debug/debugServer");
+    const mountDebug = require("./debug/debugserver");
     mountDebug({ app, io, gameState, RING_CONFIGS, SAFE_TILES, LADDERS, SNAKES, setForcedDice, getForcedDice });
 }
 
@@ -480,7 +508,7 @@ server.listen(PORT, () => {
     console.log(`🚀 Snake Ludo server on port ${PORT}`);
     console.log("📋 Board config:");
     Object.entries(RING_CONFIGS).forEach(([level, cfg]) => {
-        console.log(`   Level ${level}: ${cfg.boardSize} tiles | radius: ${cfg.radius.toFixed(2)} | height: ${cfg.height} | tileSize: ${cfg.tileSize}`);
+        console.log(`   Level ${level}: ${cfg.boardSize} tiles | ${cfg.boardSize / 4} per side | halfSide: ${cfg.halfSide.toFixed(2)} | tileSize: ${cfg.tileSize}`);
     });
     if (DEBUG_MODE) console.log("🔧 Debug mode ON — open http://localhost:3000/debug");
 });
